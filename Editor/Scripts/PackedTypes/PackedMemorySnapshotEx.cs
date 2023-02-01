@@ -323,7 +323,7 @@ namespace HeapExplorer
         /// <param name="fromIndex">An index into a snapshot array, depending on specified fromKind. If the kind would be 'Native', then it must be an index into the snapshot.nativeObjects array.</param>
         /// <param name="toKind">The connection kind, to which the 'from' object is pointing to.</param>
         /// <param name="toIndex">An index into a snapshot array, depending on the specified toKind. If the kind would be 'Native', then it must be an index into the snapshot.nativeObjects array.</param>
-        public void AddConnection(PackedConnection.Kind fromKind, int fromIndex, PackedConnection.Kind toKind, int toIndex)
+        public void AddConnection(PackedConnection.Kind fromKind, int fromIndex, PackedConnection.Kind toKind, int toIndex, List<PackedManagedField> lst)
         {
             var connection = new PackedConnection
             {
@@ -616,7 +616,7 @@ namespace HeapExplorer
 
                 var connection = connections[n];
 
-                AddConnection(connection.fromKind, connection.from, connection.toKind, connection.to);
+                AddConnection(connection.fromKind, connection.from, connection.toKind, connection.to, new List<PackedManagedField>());
 
                 //if (connection.fromKind == PackedConnection.Kind.Native || nativeObjects[connection.from].nativeObjectAddress == 0x8E9D4FD0)
                 //    fromCount++;
@@ -666,7 +666,7 @@ namespace HeapExplorer
                     connection.toKind = PackedConnection.Kind.Native;
                 }
 
-                AddConnection(connection.fromKind, connection.from, connection.toKind, connection.to);
+                AddConnection(connection.fromKind, connection.from, connection.toKind, connection.to, new List<PackedManagedField>());
 
                 //if (connection.fromKind == PackedConnection.Kind.Native || nativeObjects[connection.from].nativeObjectAddress == 0x8E9D4FD0)
                 //    fromCount++;

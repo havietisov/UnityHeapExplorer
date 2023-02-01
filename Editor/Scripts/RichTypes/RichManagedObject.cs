@@ -65,6 +65,17 @@ namespace HeapExplorer
             }
         }
 
+        public List<PackedManagedField> field_references
+        {
+            get
+            {
+                if (!isValid)
+                    return null;
+
+                return m_Snapshot.m_field_references.ContainsKey(address) ? m_Snapshot.m_field_references[address] : null;
+            }
+        }
+
         public System.Int32 size
         {
             get

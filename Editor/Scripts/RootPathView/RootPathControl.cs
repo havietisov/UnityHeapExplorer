@@ -719,7 +719,32 @@ namespace HeapExplorer
 
                 displayName = m_ManagedObject.type.name;
                 m_Address = m_ManagedObject.address;
-                m_Value = m_ManagedObject.nativeObject.isValid ? m_ManagedObject.nativeObject.name : "";
+                var refs = m_ManagedObject.field_references;
+
+                if (refs != null)
+                {
+                    string prefix = "";
+
+                    if (refs.Count == 1)
+                    {
+                        prefix += "field : " + refs[0].name + "; ";
+                    }
+                    else
+                    {
+                        prefix += "fields : ";
+
+                        foreach (var a in refs)
+                        {
+                            prefix += a.name + ";";
+                        }
+                    }
+
+                    m_Value = prefix + (m_ManagedObject.nativeObject.isValid ? m_ManagedObject.nativeObject.name : "");
+                }
+                else
+                {
+                    m_Value = "refs are null, real value : " + (m_ManagedObject.nativeObject.isValid ? m_ManagedObject.nativeObject.name : "");
+                }
             }
 
             public override void OnGUI(Rect position, int column)

@@ -15,6 +15,7 @@ namespace HeapExplorer
     {
         public PackedMemorySnapshotHeader header = new PackedMemorySnapshotHeader();
 
+        public Dictionary<ulong, List<PackedManagedField>> m_field_references = new Dictionary<ulong, List<PackedManagedField>>(1024 * 1024);
         // Descriptions of all the C++ unity types the profiled player knows about.
         public PackedNativeType[] nativeTypes = new PackedNativeType[0];
 

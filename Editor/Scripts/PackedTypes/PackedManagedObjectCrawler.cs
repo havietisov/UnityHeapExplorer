@@ -258,9 +258,9 @@ namespace HeapExplorer
                                 if (!elementType.isValueType)
                                 {
                                     if (mo.managedObjectsArrayIndex >= 0)
-                                        m_Snapshot.AddConnection(PackedConnection.Kind.Managed, mo.managedObjectsArrayIndex, PackedConnection.Kind.Managed, newObjectIndex);
+                                        m_Snapshot.AddConnection(PackedConnection.Kind.Managed, mo.managedObjectsArrayIndex, PackedConnection.Kind.Managed, newObjectIndex, null);
                                     else
-                                        m_Snapshot.AddConnection(PackedConnection.Kind.StaticField, -mo.managedObjectsArrayIndex, PackedConnection.Kind.Managed, newObjectIndex);
+                                        m_Snapshot.AddConnection(PackedConnection.Kind.StaticField, -mo.managedObjectsArrayIndex, PackedConnection.Kind.Managed, newObjectIndex, new List<PackedManagedField>());
                                 }
                             }
                         }
@@ -325,6 +325,11 @@ namespace HeapExplorer
                             int newObjIndex;
                             if (!m_Seen.TryGetValue(addr, out newObjIndex))
                             {
+                                if (!this.m_Snapshot.m_field_references.ContainsKey(addr))
+                                {
+                                    this.m_Snapshot.m_field_references.Add(addr, new List<PackedManagedField>());
+                                }
+                                this.m_Snapshot.m_field_references[addr].Add(field);
                                 var newObj = PackedManagedObject.New();
                                 newObj.address = addr;
                                 newObj.managedObjectsArrayIndex = m_ManagedObjects.Count;
@@ -343,9 +348,9 @@ namespace HeapExplorer
                             }
 
                             if (mo.managedObjectsArrayIndex >= 0)
-                                m_Snapshot.AddConnection(PackedConnection.Kind.Managed, mo.managedObjectsArrayIndex, PackedConnection.Kind.Managed, newObjIndex);
+                                m_Snapshot.AddConnection(PackedConnection.Kind.Managed, mo.managedObjectsArrayIndex, PackedConnection.Kind.Managed, newObjIndex, null);
                             else
-                                m_Snapshot.AddConnection(PackedConnection.Kind.StaticField, -mo.managedObjectsArrayIndex, PackedConnection.Kind.Managed, newObjIndex);
+                                m_Snapshot.AddConnection(PackedConnection.Kind.StaticField, -mo.managedObjectsArrayIndex, PackedConnection.Kind.Managed, newObjIndex, new List<PackedManagedField>());
 
                             continue;
                         }
@@ -483,7 +488,7 @@ namespace HeapExplorer
                             newObj.gcHandlesArrayIndex = gcHandleIndex;
                             m_Snapshot.gcHandles[gcHandleIndex].managedObjectsArrayIndex = newObj.managedObjectsArrayIndex;
 
-                            m_Snapshot.AddConnection(PackedConnection.Kind.GCHandle, gcHandleIndex, PackedConnection.Kind.Managed, newObj.managedObjectsArrayIndex);
+                            m_Snapshot.AddConnection(PackedConnection.Kind.GCHandle, gcHandleIndex, PackedConnection.Kind.Managed, newObj.managedObjectsArrayIndex, null);
                         }
                         SetObjectSize(ref newObj, managedTypes[newObj.managedTypesArrayIndex]);
                         TryConnectNativeObject(ref newObj);
@@ -495,7 +500,7 @@ namespace HeapExplorer
                         newObjIndex = newObj.managedObjectsArrayIndex;
                     }
 
-                    m_Snapshot.AddConnection(PackedConnection.Kind.StaticField, staticField.staticFieldsArrayIndex, PackedConnection.Kind.Managed, newObjIndex);
+                    m_Snapshot.AddConnection(PackedConnection.Kind.StaticField, staticField.staticFieldsArrayIndex, PackedConnection.Kind.Managed, newObjIndex, null);
 
                     continue;
                 }
@@ -570,7 +575,7 @@ namespace HeapExplorer
                 m_ManagedObjects[managedObjectIndex] = managedObj;
 
                 // Connect GCHandle to ManagedObject
-                m_Snapshot.AddConnection(PackedConnection.Kind.GCHandle, gcHandles[n].gcHandlesArrayIndex, PackedConnection.Kind.Managed, managedObj.managedObjectsArrayIndex);
+                m_Snapshot.AddConnection(PackedConnection.Kind.GCHandle, gcHandles[n].gcHandlesArrayIndex, PackedConnection.Kind.Managed, managedObj.managedObjectsArrayIndex, new List<PackedManagedField>());
 
                 // Update the GCHandle with the index to its managed object
                 gcHandles[n].managedObjectsArrayIndex = managedObj.managedObjectsArrayIndex;
@@ -633,7 +638,7 @@ namespace HeapExplorer
 
             BeginProfilerSample("AddConnection");
             // Add a Connection from ManagedObject to NativeObject (m_CachePtr)
-            m_Snapshot.AddConnection(PackedConnection.Kind.Managed, managedObj.managedObjectsArrayIndex, PackedConnection.Kind.Native, managedObj.nativeObjectsArrayIndex);
+            m_Snapshot.AddConnection(PackedConnection.Kind.Managed, managedObj.managedObjectsArrayIndex, PackedConnection.Kind.Native, managedObj.nativeObjectsArrayIndex, null); ;
             EndProfilerSample();
         }
     }
