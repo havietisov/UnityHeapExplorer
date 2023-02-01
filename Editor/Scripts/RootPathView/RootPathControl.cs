@@ -727,7 +727,7 @@ namespace HeapExplorer
 
                     if (refs.Count == 1)
                     {
-                        prefix += "field : " + refs[0].name + "; ";
+                        prefix += "field : " + snapshot.managedTypes[refs[0].managedTypesArrayIndex].name + "::" + refs[0].name + "; ";
                     }
                     else
                     {
@@ -735,7 +735,7 @@ namespace HeapExplorer
 
                         foreach (var a in refs)
                         {
-                            prefix += a.name + ";";
+                            prefix += snapshot.managedTypes[refs[0].managedTypesArrayIndex].name + "::" + a.name + ";";
                         }
                     }
 
