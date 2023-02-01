@@ -735,7 +735,7 @@ namespace HeapExplorer
 
                         foreach (var a in refs)
                         {
-                            prefix += snapshot.managedTypes[refs[0].managedTypesArrayIndex].name + "::" + a.name + ";";
+                            prefix += snapshot.managedTypes[a.managedTypesArrayIndex].name + "::" + a.name + ";";
                         }
                     }
 
