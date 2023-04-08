@@ -494,7 +494,7 @@ namespace HeapExplorer
                 {
                     var menu = new GenericMenu();
                     menu.AddItem(new GUIContent("Open..."), false, LoadFromFile);
-
+                    menu.AddItem(new GUIContent("Open Snapshot..."), false, LoadFromFileSnapshot);
                     for (int n = 0; n < HeMruFiles.count; ++n)
                     {
                         var path = HeMruFiles.GetPath(n);
@@ -645,6 +645,15 @@ namespace HeapExplorer
             FreeMem();
         }
 
+        void LoadFromFileSnapshot()
+        {
+	        var path = EditorUtility.OpenFilePanel("Load", "", "snap");
+	        if (string.IsNullOrEmpty(path))
+		        return;
+
+	        LoadFromSnap(path);
+        }
+
         void LoadFromFile()
         {
             var path = EditorUtility.OpenFilePanel("Load", "", "heap");
@@ -652,6 +661,44 @@ namespace HeapExplorer
                 return;
 
             LoadFromFile(path);
+        }
+
+        public void LoadFromSnap(string path)
+        {
+	        SaveView();
+	        FreeMem();
+	        HeMruFiles.AddPath(path);
+	        Reset();
+	        m_Heap = null;
+
+	        EditorUtility.DisplayProgressBar(HeGlobals.k_Title, "Reading memory...", 0.5f);
+	        try
+	        {
+		        m_Heap = null;
+
+		        if (useThreads)
+		        {
+			        var job = new ReceiveThreadJob
+			        {
+				        threadFunc = ReceiveHeapThreaded,
+				        snapshot = UnityEditor.Profiling.Memory.Experimental.PackedMemorySnapshot.Load(path)
+			        };
+			        ScheduleJob(job);
+		        }
+		        else
+		        {
+			        EditorUtility.DisplayProgressBar(HeGlobals.k_Title, "Analyzing memory...", 0.75f);
+			        var sshot = UnityEditor.Profiling.Memory.Experimental.PackedMemorySnapshot.Load(path);
+			        ReceiveHeapThreaded(sshot);
+		        }
+	        }
+	        finally
+	        {
+		        snapshotPath = string.Format("Captured Snapshot at {0}", DateTime.Now.ToShortTimeString());
+		        m_IsCapturing = false;
+		        m_Repaint = true;
+		        EditorUtility.ClearProgressBar();
+	        }
         }
 
         public void LoadFromFile(string path)
